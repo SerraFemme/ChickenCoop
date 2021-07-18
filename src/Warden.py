@@ -1,7 +1,8 @@
-import sched
-import time
+# import sched
+# import time
 from datetime import datetime, timedelta
 from threading import Timer
+import RPi.GPIO  # Can only be used on Raspberry Pi
 
 
 class DoorManager:
@@ -10,7 +11,7 @@ class DoorManager:
         self.system_power_status = True
         self.door_closed = True
         self.keep_door_closed = False
-        self.scheduler = sched.scheduler(time.time, time.sleep)
+        # self.scheduler = sched.scheduler(time.time, time.sleep)
         # self.morning_time = "06:00:00"
         # self.evening_time = "21:00:00"
 
@@ -24,16 +25,22 @@ class DoorManager:
         self.morning = self.delta_morning.total_seconds()
         self.evening = self.delta_evening.total_seconds()
 
+    class DoorAlreadyOpen(Exception):
+        pass
+
+    class DoorAlreadyClosed(Exception):
+        pass
+
     class DoorOpenDisabled(Exception):
         pass
 
-    def is_system_on(self) -> bool:
+    def is_manager_on(self) -> bool:
         return self.system_power_status
 
-    def turn_system_off(self):
+    def turn_manager_off(self):
         self.system_power_status = False
 
-    def turn_system_on(self):
+    def turn_manager_on(self):
         self.system_power_status = True
 
     def is_door_closed(self):
@@ -42,25 +49,29 @@ class DoorManager:
     def open_door(self):
         if self.keep_door_closed is True:
             raise self.DoorOpenDisabled
+        if self.is_door_closed() is False:
+            raise self.DoorAlreadyOpen
         self.door_closed = False
 
     def close_door(self):
+        if self.is_door_closed() is True:
+            raise self.DoorAlreadyClosed
         self.door_closed = True
 
     def disable_door_open(self):
         self.keep_door_closed = True
 
-    def get_current_time(self):
-        current_time = time.localtime()
-        time_str = time.strftime("%H:%M:%S", current_time)
-        return time_str
+    # def get_current_time(self):
+    #     current_time = time.localtime()
+    #     time_str = time.strftime("%H:%M:%S", current_time)
+    #     return time_str
 
     def morning_operations(self):
         print("Rise and shine! Now git!")
         self.open_door()
 
     def evening_operations(self):
-        print("Hit the sacks!")
+        print("Hit the sack!")
         self.close_door()
 
     def start_schedule(self):

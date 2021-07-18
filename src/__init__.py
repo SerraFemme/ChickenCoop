@@ -1,4 +1,4 @@
-from main import DoorManager
+from src.Warden import DoorManager
 
 
 def main():

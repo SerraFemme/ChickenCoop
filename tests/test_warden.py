@@ -1,5 +1,5 @@
 import unittest
-from src.main import DoorManager
+from src.Warden import DoorManager
 
 
 class MyTestCase(unittest.TestCase):
@@ -10,18 +10,18 @@ class MyTestCase(unittest.TestCase):
         self.assertIsNotNone(self.warden)
 
     def test_is_the_system_on(self):
-        self.assertTrue(self.warden.is_system_on())
+        self.assertTrue(self.warden.is_manager_on())
 
     def test_turn_the_system_off(self):
-        self.assertTrue(self.warden.is_system_on())
-        self.warden.turn_system_off()
-        self.assertFalse(self.warden.is_system_on())
+        self.assertTrue(self.warden.is_manager_on())
+        self.warden.turn_manager_off()
+        self.assertFalse(self.warden.is_manager_on())
 
     def test_turn_system_off_then_on(self):
-        self.warden.turn_system_off()
-        self.assertFalse(self.warden.is_system_on())
-        self.warden.turn_system_on()
-        self.assertTrue(self.warden.is_system_on())
+        self.warden.turn_manager_off()
+        self.assertFalse(self.warden.is_manager_on())
+        self.warden.turn_manager_on()
+        self.assertTrue(self.warden.is_manager_on())
 
     def test_check_door_is_closed(self):
         self.assertTrue(self.warden.is_door_closed())
@@ -36,9 +36,16 @@ class MyTestCase(unittest.TestCase):
         self.warden.close_door()
         self.assertTrue(self.warden.is_door_closed())
 
+    def test_opening_door_when_already_open_throws_DoorAlreadyOpen(self):
+        self.warden.open_door()
+        self.assertRaises(self.warden.DoorAlreadyOpen, self.warden.open_door)
+
     def test_opening_door_when_door_disabled_is_on_throws_DoorOpenDisabled(self):
         self.warden.disable_door_open()
         self.assertRaises(self.warden.DoorOpenDisabled, self.warden.open_door)
+
+    def test_closing_door_when_already_closed_throws_DoorClosedAlready(self):
+        self.assertRaises(self.warden.DoorAlreadyClosed, self.warden.close_door)
 
     def test_door_closes_when_door_is_open_and_door_open_disabled_is_active(self):
         self.warden.open_door()
@@ -47,16 +54,17 @@ class MyTestCase(unittest.TestCase):
         self.warden.close_door()
         self.assertTrue(self.warden.is_door_closed())
 
-    def test_warden_knows_the_time(self):
-        test_time = self.warden.get_current_time()
-        self.assertTrue(test_time)
-        print("Current Time: " + test_time)
+    # def test_warden_knows_the_time(self):
+    #     test_time = self.warden.get_current_time()
+    #     self.assertTrue(test_time)
+    #     print("Current Time: " + test_time)
 
     def test_warden_opens_the_door_at_6_AM(self):
         self.warden.morning_operations()
         self.assertFalse(self.warden.is_door_closed())
 
     def test_warden_closes_the_door_at_9_PM(self):
+        self.warden.open_door()
         self.warden.evening_operations()
         self.assertTrue(self.warden.is_door_closed())
 
